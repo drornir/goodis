@@ -9,11 +9,12 @@ import (
 	"time"
 )
 
-var TEST_PORT = 6380
+const testPort = 6380
+
 var s *server.Server
 
 func TestRespondToPing(t *testing.T) {
-	serverUP(TEST_PORT)
+	serverUP(testPort)
 	defer serverDown()
 
 	err := waitForOpenPort()
@@ -34,7 +35,7 @@ func TestRespondToPing(t *testing.T) {
 
 func client() *redis.Client {
 	client := redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("localhost:%v", TEST_PORT),
+		Addr: fmt.Sprintf("localhost:%v", testPort),
 	})
 	return client
 }
@@ -64,11 +65,8 @@ func waitForOpenPort() error {
 	}()
 
 	for !giveUp {
-		conn, err := net.DialTimeout(
-			"tcp",
-			fmt.Sprintf("localhost:%v", TEST_PORT),
-			backoff*time.Millisecond,
-		)
+		addr := fmt.Sprintf("localhost:%v", testPort)
+		conn, err := net.DialTimeout("tcp", addr, backoff*time.Millisecond)
 
 		if err == nil {
 			conn.Close()

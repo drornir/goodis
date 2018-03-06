@@ -3,7 +3,7 @@ package goodis
 import "github.com/drornir/goodis/server"
 
 type Server interface {
-	Listen()
+	Listen() error
 	Close()
 }
 
