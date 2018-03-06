@@ -1,11 +1,11 @@
 package goodis
 
 import (
-	"github.com/go-redis/redis"
-	"github.com/drornir/goodis/server"
-	"testing"
 	"fmt"
+	"github.com/drornir/goodis/server"
+	"github.com/go-redis/redis"
 	"net"
+	"testing"
 	"time"
 )
 
@@ -19,12 +19,12 @@ func TestRespondToPing(t *testing.T) {
 
 	err := waitForOpenPort()
 	if err != nil {
-		t.Fatalf("test: server port is not open:\n%v", err)
+		t.Fatalf("server port is not open: %v", err)
 	}
 
 	got, err := client().Ping().Result()
 	if err != nil {
-		t.Fatalf("Error Sending Ping:\n%v", err)
+		t.Fatalf("pinging failed: %v", err)
 	}
 
 	expected := "PONG"

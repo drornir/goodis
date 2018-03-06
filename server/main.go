@@ -1,9 +1,9 @@
 package server
 
 import (
+	"fmt"
 	"net"
 	"strconv"
-	"fmt"
 )
 
 type Server struct {
@@ -20,7 +20,6 @@ func New(port int) *Server {
 }
 
 func (s *Server) Listen() error {
-
 	addr := fmt.Sprintf("%v:%v", s.host, s.port)
 
 	l, err := net.Listen("tcp", addr)
@@ -33,6 +32,6 @@ func (s *Server) Listen() error {
 }
 
 func (s *Server) Close() {
- 	_ = s.listener.Close()
- 	s.listener = nil
+	_ = s.listener.Close()
+	s.listener = nil
 }
