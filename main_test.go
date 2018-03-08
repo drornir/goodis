@@ -1,17 +1,27 @@
-package goodis
+package main
 
 import (
 	"fmt"
 	"github.com/drornir/goodis/server"
 	"github.com/go-redis/redis"
+	"log"
 	"net"
 	"testing"
 	"time"
 )
 
+func TestMain(m *testing.M) {
+	//srv := NewServer(6390)
+	//e := srv.Listen()
+	//if e != nil {
+	//	log.Fatal(e)
+	//}
+	//srv.Close()
+}
+
 const testPort = 6380
 
-var s *server.Server
+var s *server.server
 
 func TestRespondToPing(t *testing.T) {
 	serverUP(testPort)

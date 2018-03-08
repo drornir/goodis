@@ -1,12 +1,22 @@
-package goodis
+package main
 
-import "github.com/drornir/goodis/server"
+import (
+	"github.com/drornir/goodis/server"
+	"log"
+	"github.com/drornir/goodis/handling"
+)
 
-type Server interface {
-	Listen() error
-	Close()
+func main(){
+	srv := NewServer(6390)
+	e := srv.Listen()
+	if e != nil {
+		log.Fatal(e)
+	}
+	srv.Close()
 }
 
+
+
 func NewServer(port int) Server {
-	return server.New(port)
+	return server.New(port, handling.New())
 }
