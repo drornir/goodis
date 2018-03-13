@@ -23,5 +23,5 @@ func NewServer(addr string) (io.Closer, error) {
 }
 
 func AppHandler() tcpserver.Handler {
-	return tcpserver.Handler{Handle: goodis.New().Handler()}
+	return tcpserver.Handler{Handle: goodis.New().Handle}
 }

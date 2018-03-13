@@ -2,6 +2,7 @@ package tcpserver
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net"
 )
@@ -16,7 +17,7 @@ type tcp struct {
 }
 
 type Handler struct {
-	Handle func(string) string
+	Handle func(string) (string, error)
 }
 
 func (t *tcp) Close() error {
@@ -46,20 +47,37 @@ func NewListeningTCPServer(addr string, h Handler) (TCPServer, error) {
 
 func handleConn(conn net.Conn, h Handler) {
 	defer conn.Close()
-	bf := make([]byte, 1024)
-	_, readErr := conn.Read(bf)
+
+	bytesRead, readErr := read(conn)
 	if readErr != nil {
-		log.Printf("read from connection '%v': %v ", conn.RemoteAddr(), readErr)
-		bf = []byte{}
+		log.Printf("read from '%v' finished: %v", conn, readErr)
+		return
 	}
-	read := string(bf)
 
-	resp := h.Handle(read)
+	resp, _ := h.Handle(string(bytesRead))
 
-	bf = []byte(resp)
+	bf := []byte(resp)
 	_, writeErr := conn.Write(bf)
 	if writeErr != nil {
 		log.Printf("write '%v' to connection '%v': %v ", resp, conn.RemoteAddr(), writeErr)
 		return
+	}
+}
+
+func read(conn net.Conn) ([]byte, error) {
+	bf := make([]byte, 1024)
+	n, readErr := conn.Read(bf)
+
+	switch readErr {
+	case nil:
+		return bf[:n], nil
+	case io.EOF:
+		if n > 0 {
+			return bf[:n], nil
+		} else {
+			return []byte{}, io.EOF
+		}
+	default:
+		return []byte{}, fmt.Errorf("read from conn '%v' failed : %v", conn, readErr)
 	}
 }

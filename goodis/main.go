@@ -1,19 +1,19 @@
 package goodis
 
+import "github.com/drornir/goodis/goodis/request"
+
 type App interface {
-	Handler() Handler
+	Handle(string) (string, error)
 }
 
 type app struct {
-	handler Handler
 }
 
 func New() App {
-	return &app{
-		handler: AppHandler(),
-	}
+	return new(app)
 }
 
-func (a app) Handler() Handler {
-	return a.handler
+func (a *app) Handle(req string) (string, error) {
+	handler := new(request.Handler)
+	return handler.Handle(req)
 }
