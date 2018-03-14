@@ -1,4 +1,4 @@
-package goodis
+package main
 
 import (
 	"fmt"
@@ -25,6 +25,7 @@ func TestEcho(t *testing.T) {
 		}
 	})
 }
+
 func TestPing(t *testing.T) {
 	WithServer(t, func() {
 		clt := testutils.NewRedisClient()
@@ -58,7 +59,7 @@ func WithServer(t *testing.T, cb func()) {
 }
 
 func waitUntilOpen(addr string) error {
-	timer := time.NewTimer(3 * time.Second)
+	timer := time.NewTimer(1 * time.Second)
 
 	for {
 		select {
