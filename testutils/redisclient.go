@@ -2,8 +2,8 @@ package testutils
 
 import "github.com/go-redis/redis"
 
-func NewRedisClient(addr string) *redis.Client {
+func NewRedisClient() *redis.Client {
 	return redis.NewClient(&redis.Options{
-		Addr: addr,
+		Addr: ServerAddr,
 	})
 }

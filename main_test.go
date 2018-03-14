@@ -1,67 +1,87 @@
-package main
+package goodis
 
 import (
 	"fmt"
 	"github.com/drornir/goodis/testutils"
-	"github.com/go-redis/redis"
 	"io"
-	"log"
+	"net"
 	"testing"
+	"time"
 )
 
 func TestEcho(t *testing.T) {
-	srv, clt, err := before(t)
-	if err != nil {
-		t.Fatal(testutils.Fatal(t, err))
-		return
-	}
-	defer closeAndLog(srv)
-	defer clt.Close()
+	WithServer(t, func() {
+		clt := testutils.NewRedisClient()
+		defer clt.Close()
+		expect := "echo\nme\nback"
 
-	expect := fmt.Sprintf("hi\nman")
+		resp, err := clt.Echo(expect).Result()
+		if err != nil {
+			t.Fatalf("client error: %v", err)
+		}
 
-	resp, err := clt.Echo(expect).Result()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if resp != expect {
-		t.Fatal(testutils.Expected(t, expect, resp))
-	}
-
-	closeAndLog(srv)
+		if expect != resp {
+			t.Fatal(testutils.Expected(t, expect, resp))
+		}
+	})
 }
-
 func TestPing(t *testing.T) {
-	srv, clt, err := before(t)
-	if err != nil {
-		t.Fatal(testutils.Fatal(t, err))
-		return
-	}
-	defer closeAndLog(srv)
-	defer clt.Close()
+	WithServer(t, func() {
+		clt := testutils.NewRedisClient()
+		defer clt.Close()
 
-	expect := "PONG"
+		expect := "PONG"
 
-	resp, err := clt.Ping().Result()
-	if err != nil {
-		t.Error(err)
-	}
+		resp, err := clt.Ping().Result()
+		if err != nil && err != io.EOF {
+			t.Fatalf("client error: %v", err)
+		}
 
-	if expect != resp {
-		t.Fatal(testutils.Expected(t, expect, resp))
-	}
-}
-func before(t *testing.T) (io.Closer, *redis.Client, error) {
-	srv, err := NewServer(testutils.ServerAddr)
-	if err != nil {
-		return nil, nil, err
-	}
-	clt := testutils.NewRedisClient(testutils.ServerAddr)
-	return srv, clt, nil
+		if expect != resp {
+			t.Fatal(testutils.Expected(t, expect, resp))
+		}
+	})
 }
 
-func closeAndLog(s io.Closer) {
-	closeErr := s.Close()
-	log.Printf("server exit with '%v'\n", closeErr)
+func WithServer(t *testing.T, cb func()) {
+	srv := New(testutils.ServerAddr)
+	defer srv.Close()
+	go func() {
+		_ = srv.Listen()
+	}()
+
+	if err := waitUntilOpen(testutils.ServerAddr); err != nil {
+		t.Fatalf("'%v' is not open: %v", testutils.ServerAddr, err)
+	}
+
+	cb()
+}
+
+func waitUntilOpen(addr string) error {
+	timer := time.NewTimer(3 * time.Second)
+
+	for {
+		select {
+		case <-timer.C:
+			return fmt.Errorf("timeout")
+		default:
+			if isOpen(addr) {
+				return nil
+			} else {
+				time.Sleep(time.Millisecond)
+			}
+		}
+	}
+}
+func isOpen(addr string) bool {
+	l, err := net.Dial("tcp", addr)
+	if l != nil {
+		defer l.Close()
+	}
+
+	if err != nil {
+		return false
+	} else {
+		return true
+	}
 }

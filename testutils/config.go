@@ -1,3 +1,3 @@
 package testutils
 
-const ServerAddr = ":6380"
+const ServerAddr = "localhost:6380"
